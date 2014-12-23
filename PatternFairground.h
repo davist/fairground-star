@@ -7,7 +7,7 @@
 
 #define NUM_LEDS 11
 
-#define SLOW 12
+#define SLOW 9
 #define MEDIUM 6
 #define FAST 3
 
@@ -15,10 +15,10 @@
 
 #define ANIM_PaintAndWipe 1
 #define ANIM_Fifo 2
-//#define ANIM_OddThenEven 3
 #define ANIM_ContinuousPaint 3
 #define ANIM_Marching 4
 #define ANIM_Flash 5
+#define ANIM_ContinuousPaintMono 6
 
 
 class PatternFairground : public Pattern {
@@ -36,8 +36,8 @@ class PatternFairground : public Pattern {
   
   bool usedPaintAndWipe;
   bool usedFifo;
-//  bool usedOddThenEven;
   bool usedContinuousPaint;
+  bool usedContinuousPaintMono;
   bool usedMarching;
   bool usedFlash;  
   
@@ -133,12 +133,11 @@ public:
             usedFifo = true;
             break;
         }
-
-        animRepeats = random8(3,5);
+        
+        animRepeats = random8(2,4);
         break;
         
       case 1: // optional extra 1st half anim
-      case 2:
         frameDelay = MEDIUM;
         switch (random8(0, 2)) {
           case 0:
@@ -150,8 +149,17 @@ public:
             usedFifo = true;
             break;
         }
+        animRepeats = random8(2,4);
+        break;
+
+      case 2: // if one anim unused, use it
         
-        animRepeats = random8(3,5);
+        if (!usedPaintAndWipe)       anim = ANIM_PaintAndWipe;
+        else if (!usedFifo)          anim = ANIM_Fifo;
+        else if (random8(0, 2) == 0) anim = ANIM_PaintAndWipe;
+        else                         anim = ANIM_Fifo;
+        
+        animRepeats = random8(2,4);
         break;
       
       case 3: // optional flash
@@ -171,20 +179,27 @@ public:
           else frameDelay = FAST;
         }
         
-        switch (random8(0, 2)) {
+        switch (random8(0, 3)) {
           case 0:
             anim = ANIM_ContinuousPaint;
             if (usedContinuousPaint) frameDelay = FAST; // if used before, speed up
             usedContinuousPaint = true;
+            animRepeats = random8(3,5);
             break;
           case 1:
+            anim = ANIM_ContinuousPaintMono;
+            if (usedContinuousPaintMono) frameDelay = FAST; // if used before, speed up
+            usedContinuousPaintMono = true;
+            animRepeats = random8(6,8);
+            break;
+          case 2:
             anim = ANIM_Marching;
             if (usedMarching) frameDelay = FAST;
             usedMarching = true;
+            animRepeats = random8(3,5);
             break;
         }
         
-        animRepeats = random8(5,9);
         break;
       
       case 6: // optional flash (if 1st flash didn't happen)
@@ -215,6 +230,10 @@ public:
 
       case ANIM_ContinuousPaint:
         finished = continuousPaint();
+        break;
+      
+      case ANIM_ContinuousPaintMono:
+        finished = continuousPaintMono();
         break;
       
       case ANIM_Marching:
@@ -350,6 +369,23 @@ public:
     return false;
   }
   
+  bool continuousPaintMono(void) {
+    static uint8_t curSetNum = 0;
+
+    groups[curGroup].setColour(curSetNum, palettes[curPalette].colours[curPaletteIndex]);
+
+    curSetNum++;
+    
+    if (curSetNum == curGroupSize) {
+      curSetNum = 0;
+      curPaletteIndex = (curPaletteIndex + 1) % palettes[curPalette].size;
+      // finished
+      return true;
+    }
+    
+    return false;
+  }
+  
   bool marching(void) {
     static uint8_t offset = 0;
     static uint8_t iterations = 5;
@@ -385,7 +421,9 @@ public:
     
     if (flashOn) {
       for (uint8_t curSetNum=0; curSetNum < curGroupSize; curSetNum++) {
-        groups[curGroup].setColour(curSetNum, palettes[curPalette].colours[curPaletteIndex]);
+        CRGB col = palettes[curPalette].colours[curPaletteIndex];
+        groups[curGroup].setColour(curSetNum, col);
+        groups[curGroup].setCommon(col);
         curPaletteIndex = (curPaletteIndex + 1) % palettes[curPalette].size;
       }
       
@@ -394,6 +432,7 @@ public:
     else {
       for (uint8_t curSetNum=0; curSetNum < curGroupSize; curSetNum++) {
         groups[curGroup].setColour(curSetNum, CRGB::Black);
+        groups[curGroup].setCommon(CRGB::Black);
       }
 
       flashOn = true;
