@@ -1,7 +1,7 @@
-#ifndef __INC_PATTERN_PLASMA_H
-#define __INC_PATTERN_PLASMA_H
+#ifndef __INC_MOOD_STEADY_H
+#define __INC_MOOD_STEADY_H
 
-#include "Pattern.h"
+#include "Mood.h"
 #include "Palettes.h"
 #include "Groups.h"
 
@@ -11,7 +11,7 @@
 #define PALETTE_DURATION 300000
 
 
-class PatternSteady : public Pattern {
+class MoodSteady : public Mood {
   
   uint8_t curPalette;
   uint8_t curPaletteIndex;
@@ -20,7 +20,7 @@ class PatternSteady : public Pattern {
   uint32_t lastPaletteChangeTime;
   
 public:
-  PatternSteady() {
+  MoodSteady() {
     lastPaletteChangeTime = millis() - PALETTE_DURATION - 1;
   }
   

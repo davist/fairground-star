@@ -1,7 +1,7 @@
-#ifndef __INC_PATTERN_FAIRGROUND_H
-#define __INC_PATTERN_FAIRGROUND_H
+#ifndef __INC_MOOD_FAIRGROUND_H
+#define __INC_MOOD_FAIRGROUND_H
 
-#include "Pattern.h"
+#include "Mood.h"
 #include "Palettes.h"
 #include "Groups.h"
 
@@ -21,7 +21,7 @@
 #define ANIM_ContinuousPaintMono 6
 
 
-class PatternFairground : public Pattern {
+class MoodFairground : public Mood {
   
   uint8_t frameDelay;
   uint8_t frameDelayCount;
@@ -45,7 +45,7 @@ class PatternFairground : public Pattern {
   uint8_t animRepeats;
   
 public:
-  PatternFairground() {
+  MoodFairground() {
     frameDelay = SLOW;
     frameDelayCount = frameDelay;
     curPaletteIndex = 0;

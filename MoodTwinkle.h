@@ -1,7 +1,7 @@
-#ifndef __INC_PATTERN_CHRISTMAS_TREE_H
-#define __INC_PATTERN_CHRISTMAS_TREE_H
+#ifndef __INC_MOOD_TWINKLE_H
+#define __INC_MOOD_TWINKLE_H
 
-#include "Pattern.h"
+#include "Mood.h"
 #include "Palettes.h"
 #include "Groups.h"
 
@@ -67,7 +67,7 @@ struct Bulb {
 };
 
 
-class PatternChristmasTree : public Pattern {
+class MoodChristmasTree : public Mood {
   
   uint8_t curPalette;
   uint8_t curPaletteIndex;
@@ -84,7 +84,7 @@ class PatternChristmasTree : public Pattern {
   Bulb bulbs[11];
 
 public:
-  PatternChristmasTree() {
+  MoodChristmasTree() {
     chaseDelayCount = CHASE_DELAY;
 
     lastPaletteChangeTime = lastSeqChangeTime = millis();

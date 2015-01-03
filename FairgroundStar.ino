@@ -1,10 +1,10 @@
 #include <FastLED.h>
 #include <avr/sleep.h>
 
-#include "Pattern.h"
-#include "PatternFairground.h"
-#include "PatternChristmasTree.h"
-#include "PatternSteady.h"
+#include "Mood.h"
+#include "MoodFairground.h"
+#include "MoodTwinkle.h"
+#include "MoodSteady.h"
 
 // led strip
 #define LED_TYPE WS2812B
@@ -30,31 +30,31 @@
 CRGB leds[NUM_LEDS];
 CRGB realLeds[NUM_LEDS];
 
-Pattern* curPattern;
-uint8_t curPatternNum = 0;
+Mood* curMood;
+uint8_t curMoodNum = 0;
 volatile uint32_t touchTime = 0;
 volatile bool stillTouching = false;
 
 /////////////////////////////////////////
 
-void changePattern(void) {
+void changeMood(void) {
 
   fill_solid(leds, NUM_LEDS, CRGB::Black);
 
-  if (curPattern) delete curPattern;
+  if (curMood) delete curMood;
 
-  curPatternNum = (curPatternNum + 1) % 3;
+  curMoodNum = (curMoodNum + 1) % 3;
 
-  switch (curPatternNum) {
+  switch (curMoodNum) {
 
     case 0:
-      curPattern = new PatternFairground();
+      curMood = new MoodFairground();
       break;
     case 1:
-      curPattern = new PatternChristmasTree();
+      curMood = new MoodTwinkle();
       break;
     case 2:
-      curPattern = new PatternSteady();
+      curMood = new MoodSteady();
       break;
   }
 }
@@ -82,7 +82,7 @@ void setup(void) {
   FastLED.clear();
   FastLED.show();
 
-  curPattern = new PatternFairground();
+  curMood = new MoodFairground();
 
   // set up handler for touch sensor
   pinMode(TOUCH_PIN, INPUT);
@@ -102,7 +102,7 @@ void loop(void) {
     if (digitalRead(TOUCH_PIN) == LOW) {
       // short press - change pattern
       stillTouching = false;
-      changePattern();
+      changeMood();
     }
     else if (millis() - touchTime > LONG_TOUCH_TIME) {
       // long press - turn off
@@ -128,7 +128,7 @@ void loop(void) {
   if (millis() - lastRenderTime >= FRAME_TIME) {
   
     lastRenderTime = millis();
-    curPattern->run();
+    curMood->run();
     
     // copy leds to realLeds with hysteresis
     for (uint8_t i=0; i<NUM_LEDS; i++) {
