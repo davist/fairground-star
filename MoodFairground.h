@@ -11,8 +11,6 @@
 #define MEDIUM 6
 #define FAST 3
 
-#define ANIM_
-
 #define ANIM_PaintAndWipe 1
 #define ANIM_Fifo 2
 #define ANIM_ContinuousPaint 3
@@ -54,11 +52,14 @@ public:
   
   void changePaletteAndGroup(void) {
     curGroup = random8(NUM_FAIRGROUND_GROUPS);
-    curGroupSize = groups[curGroup].size;
+    curGroupSize = fairgroundGroups[curGroup].size;
     curPalette = random8(NUM_PALETTES);
+    curPaletteIndex = 0;
     
     // common bulbs have constant colour
-    groups[curGroup].setCommon(palettes[curPalette].colours[random8(palettes[curPalette].size)]);
+    fairgroundGroups[curGroup].setCommon(
+      palettes[curPalette].colours[ random8(palettes[curPalette].size) ]
+    );
   }
 
   void changeStep(bool reset) {
@@ -259,7 +260,7 @@ public:
     
     if (painting) {
       // paint
-      groups[curGroup].setColour(curSetNum, palettes[curPalette].colours[curPaletteIndex]);
+      fairgroundGroups[curGroup].setColour(curSetNum, palettes[curPalette].colours[curPaletteIndex]);
   
       curPaletteIndex = (curPaletteIndex + 1) % palettes[curPalette].size;
       curSetNum++;
@@ -270,7 +271,7 @@ public:
     }
     else {
       // wipe
-      groups[curGroup].setColour(curSetNum, CRGB::Black);
+      fairgroundGroups[curGroup].setColour(curSetNum, CRGB::Black);
   
       curSetNum++;
       if (curSetNum == curGroupSize) {
@@ -304,10 +305,10 @@ public:
       if (curSetNum == 0) initialPaletteIndex = curPaletteIndex;
       
       if (curSetNum > 0) {
-        groups[curGroup].setColour(curSetNum - 1, CRGB::Black);
+        fairgroundGroups[curGroup].setColour(curSetNum - 1, CRGB::Black);
       }
 
-      groups[curGroup].setColour(curSetNum, palettes[curPalette].colours[curPaletteIndex]);
+      fairgroundGroups[curGroup].setColour(curSetNum, palettes[curPalette].colours[curPaletteIndex]);
   
       curSetNum++;
 
@@ -327,11 +328,11 @@ public:
     else {
       // empty
       if (curSetNum > 0) {
-        groups[curGroup].setColour(curSetNum - 1, CRGB::Black);
+        fairgroundGroups[curGroup].setColour(curSetNum - 1, CRGB::Black);
       }
 
       if (curSetNum < curGroupSize) {
-        groups[curGroup].setColour(curSetNum, palettes[curPalette].colours[curPaletteIndex]);
+        fairgroundGroups[curGroup].setColour(curSetNum, palettes[curPalette].colours[curPaletteIndex]);
       }
       
       curSetNum++;
@@ -355,7 +356,7 @@ public:
   bool continuousPaint(void) {
     static uint8_t curSetNum = 0;
 
-    groups[curGroup].setColour(curSetNum, palettes[curPalette].colours[curPaletteIndex]);
+    fairgroundGroups[curGroup].setColour(curSetNum, palettes[curPalette].colours[curPaletteIndex]);
 
     curSetNum++;
     curPaletteIndex = (curPaletteIndex + 1) % palettes[curPalette].size;
@@ -372,7 +373,7 @@ public:
   bool continuousPaintMono(void) {
     static uint8_t curSetNum = 0;
 
-    groups[curGroup].setColour(curSetNum, palettes[curPalette].colours[curPaletteIndex]);
+    fairgroundGroups[curGroup].setColour(curSetNum, palettes[curPalette].colours[curPaletteIndex]);
 
     curSetNum++;
     
@@ -398,7 +399,7 @@ public:
     curPaletteIndex = offset;
 
     for (uint8_t curSetNum=0; curSetNum < curGroupSize; curSetNum++) {
-      groups[curGroup].setColour(curSetNum, palettes[curPalette].colours[curPaletteIndex]);
+      fairgroundGroups[curGroup].setColour(curSetNum, palettes[curPalette].colours[curPaletteIndex]);
       curPaletteIndex = (curPaletteIndex + 1) % palettes[curPalette].size;
     }
     
@@ -422,8 +423,8 @@ public:
     if (flashOn) {
       for (uint8_t curSetNum=0; curSetNum < curGroupSize; curSetNum++) {
         CRGB col = palettes[curPalette].colours[curPaletteIndex];
-        groups[curGroup].setColour(curSetNum, col);
-        groups[curGroup].setCommon(col);
+        fairgroundGroups[curGroup].setColour(curSetNum, col);
+        fairgroundGroups[curGroup].setCommon(col);
         curPaletteIndex = (curPaletteIndex + 1) % palettes[curPalette].size;
       }
       
@@ -431,8 +432,8 @@ public:
     }
     else {
       for (uint8_t curSetNum=0; curSetNum < curGroupSize; curSetNum++) {
-        groups[curGroup].setColour(curSetNum, CRGB::Black);
-        groups[curGroup].setCommon(CRGB::Black);
+        fairgroundGroups[curGroup].setColour(curSetNum, CRGB::Black);
+        fairgroundGroups[curGroup].setCommon(CRGB::Black);
       }
 
       flashOn = true;

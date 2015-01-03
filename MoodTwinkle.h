@@ -62,12 +62,12 @@ struct Bulb {
     col %= ease8InOutCubic(value);
     
     // set relevant leds
-    groups[curGroup].setColour(setNum, col);
+    twinkleGroups[curGroup].setColour(setNum, col);
   }
 };
 
 
-class MoodChristmasTree : public Mood {
+class MoodTwinkle : public Mood {
   
   uint8_t curPalette;
   uint8_t curPaletteIndex;
@@ -84,7 +84,7 @@ class MoodChristmasTree : public Mood {
   Bulb bulbs[11];
 
 public:
-  MoodChristmasTree() {
+  MoodTwinkle() {
     chaseDelayCount = CHASE_DELAY;
 
     lastPaletteChangeTime = lastSeqChangeTime = millis();
@@ -121,13 +121,13 @@ public:
     switch (curSeq) {
       case 0: // twinkle
         for (int8_t i=0; i<NUM_TWINKLE; i++) {
-          bulbs[i].update(curPalette, GROUP_SPIRAL, cycleIndex);
+          bulbs[i].update(curPalette, GROUP_TWINKLE_INDIVIDUAL, cycleIndex);
         }
         break;
         
       case 1: // fade
         for (int8_t i=0; i<NUM_FADE; i++) {
-          bulbs[i].update(curPalette, GROUP_ARMS2, cycleIndex);
+          bulbs[i].update(curPalette, GROUP_TWINKLE_ARMS, cycleIndex);
         }
         break;
         
@@ -139,7 +139,7 @@ public:
         fill_solid(leds, NUM_LEDS, CRGB::Black);
 
         for (int8_t i=chaseStart; i<NUM_CHASE; i+=CHASE_GAP) {
-          groups[GROUP_SPIRAL].setColour(i, palettes[curPalette].colours[curPaletteIndex]);
+          twinkleGroups[GROUP_TWINKLE_INDIVIDUAL].setColour(i, palettes[curPalette].colours[curPaletteIndex]);
           if (cycleIndex) {
             curPaletteIndex = (curPaletteIndex + 1) % palettes[curPalette].size;
           }
