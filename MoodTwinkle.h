@@ -11,13 +11,8 @@
 #define SEQ_DURATION 120000
 
 #define NUM_TWINKLE 11
-#define NUM_CHASE 11
 #define NUM_FADE 6
-#define NUM_SEQ 2
-
-#define CHASE_DELAY 5
-#define CHASE_GAP 3
-
+#define NUM_SEQ 3
 
 struct Bulb {
   bool fadingUp;
@@ -78,15 +73,10 @@ class MoodTwinkle : public Mood {
   uint32_t lastPaletteChangeTime;
   uint32_t lastSeqChangeTime;
 
-  uint8_t chaseStart;
-  uint8_t chaseDelayCount;
-
-  Bulb bulbs[11];
+  Bulb bulbs[NUM_LEDS];
 
 public:
   MoodTwinkle() {
-    chaseDelayCount = CHASE_DELAY;
-
     lastPaletteChangeTime = lastSeqChangeTime = millis();
     curSeq = random8(0, NUM_SEQ);
     changePalette();
@@ -114,37 +104,21 @@ public:
       } while (curSeq == lastSeq);
       
       init();
-      
-      chaseDelayCount = CHASE_DELAY;
     }
     
     switch (curSeq) {
       case 0: // twinkle
+      case 1: // slow twinkle
         for (int8_t i=0; i<NUM_TWINKLE; i++) {
           bulbs[i].update(curPalette, GROUP_TWINKLE_INDIVIDUAL, cycleIndex);
         }
         break;
         
-      case 1: // fade
+      case 2: // fade
         for (int8_t i=0; i<NUM_FADE; i++) {
           bulbs[i].update(curPalette, GROUP_TWINKLE_ARMS, cycleIndex);
         }
-        break;
-        
-      case 2: // chase
-        if (++chaseDelayCount < CHASE_DELAY) return false;    
-        chaseDelayCount = 0;
-        chaseStart = (chaseStart + 1) % CHASE_GAP;
-        
-        fill_solid(leds, NUM_LEDS, CRGB::Black);
-
-        for (int8_t i=chaseStart; i<NUM_CHASE; i+=CHASE_GAP) {
-          twinkleGroups[GROUP_TWINKLE_INDIVIDUAL].setColour(i, palettes[curPalette].colours[curPaletteIndex]);
-          if (cycleIndex) {
-            curPaletteIndex = (curPaletteIndex + 1) % palettes[curPalette].size;
-          }
-        }
-        break;
+        break;        
     }
     
     return true;
@@ -157,14 +131,16 @@ public:
   }
   
   void init(void) {
+    uint8_t stepMin;
     switch (curSeq) {
-      case 0: //twinkle
+      case 0: // twinkle
+      case 1: // slow twinkle
         for (int8_t i=0; i<NUM_LEDS; i++) {
-          bulbs[i].init(15+i, curPaletteIndex, i);
+          bulbs[i].init( (curSeq == 0 ? 15 : 7) + i, curPaletteIndex, i);
         }
         break;
   
-      case 1: // fade
+      case 2: // fade
         for (int8_t i=0; i<NUM_LEDS; i++) {
           bulbs[i].init(2, curPaletteIndex, i);
         }
