@@ -4,8 +4,8 @@
 #include "Mood.h"
 #include "Palettes.h"
 #include "Groups.h"
+#include "config.h"
 
-#define NUM_LEDS 11
 
 #define INDEX_DURATION 30000
 #define PALETTE_DURATION 300000

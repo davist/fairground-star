@@ -4,8 +4,8 @@
 #include "Mood.h"
 #include "Palettes.h"
 #include "Groups.h"
+#include "config.h"
 
-#define NUM_LEDS 11
 
 #define PALETTE_DURATION 30000
 #define SEQ_DURATION 120000
@@ -127,8 +127,8 @@ public:
  private:
  
   void changePalette(void) {
-    curPalette = random8(0, NUM_PALETTES - 1);
-    curPaletteIndex = random8(0, palettes[curPalette].size - 1);
+    curPalette = random8(0, NUM_PALETTES);
+    curPaletteIndex = random8(0, palettes[curPalette].size);
     cycleIndex = (random8() < 180);
   }
   
@@ -138,7 +138,7 @@ public:
       case 0: // twinkle
       case 1: // slow twinkle
         for (int8_t i=0; i<NUM_LEDS; i++) {
-          bulbs[i].init( (curSeq == 0 ? 15 : 7) + i, curPaletteIndex, i);
+          bulbs[i].init( (curSeq == 0 ? 15 : 6) + i, curPaletteIndex, i);
         }
         break;
   

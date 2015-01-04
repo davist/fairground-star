@@ -4,8 +4,7 @@
 #include "Mood.h"
 #include "Palettes.h"
 #include "Groups.h"
-
-#define NUM_LEDS 11
+#include "config.h"
 
 #define SLOW 9
 #define MEDIUM 6
@@ -161,21 +160,25 @@ private:
     // initialise step
     switch (seqStep) {
       case 0: // initial 1st half anim
+        Serial.println("step 0");
         // reset everything
         frameDelay = SLOW;
         usedPaintAndWipe = false;
         usedFifo = false;
         usedContinuousPaint = false;
+        usedContinuousPaintMono = false;
         usedMarching = false;
         usedFlash = false;  
         changePaletteAndGroup();
         
         switch (random8(0, 2)) {
           case 0:
+            Serial.println("paint/wipe");
             anim = ANIM_PaintAndWipe;
             usedPaintAndWipe = true;
             break;
           case 1:
+            Serial.println("fifo");
             anim = ANIM_Fifo;
             usedFifo = true;
             break;
@@ -185,13 +188,16 @@ private:
         break;
         
       case 1: // optional extra 1st half anim
+        Serial.println("step 1");
         frameDelay = MEDIUM;
         switch (random8(0, 2)) {
           case 0:
+            Serial.println("paint/wipe");
             anim = ANIM_PaintAndWipe;
             usedPaintAndWipe = true;
             break;
           case 1:
+            Serial.println("fifo");
             anim = ANIM_Fifo;
             usedFifo = true;
             break;
@@ -200,6 +206,7 @@ private:
         break;
 
       case 2: // if one anim unused, use it
+        Serial.println("step 2");
         
         if (!usedPaintAndWipe)       anim = ANIM_PaintAndWipe;
         else if (!usedFifo)          anim = ANIM_Fifo;
@@ -210,6 +217,7 @@ private:
         break;
       
       case 3: // optional flash
+        Serial.println("step 3");
         frameDelay = FAST;
         anim = ANIM_Flash;
         animRepeats = random8(4,7);        
@@ -218,9 +226,11 @@ private:
       case 4: // 2nd half anim
       case 5:
         if (seqStep == 4) {
+          Serial.println("step 4");
           frameDelay = random8(0,2) ? SLOW : MEDIUM;
         }
         else  {
+          Serial.println("step 5");
           // speed up in step 5
           if (frameDelay == SLOW) frameDelay = MEDIUM;
           else frameDelay = FAST;
@@ -250,6 +260,7 @@ private:
         break;
       
       case 6: // optional flash (if 1st flash didn't happen)
+        Serial.println("step 6");
         frameDelay = FAST;
         anim = ANIM_Flash;
         animRepeats = random8(4,7);        

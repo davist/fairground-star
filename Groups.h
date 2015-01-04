@@ -1,9 +1,7 @@
 #ifndef __INC_GROUPS_H
 #define __INC_GROUPS_H
 
-#include "FastLED.h"
-
-extern CRGB leds[];
+#include "config.h"
 
 #define NUM_FAIRGROUND_GROUPS 4
 #define NUM_TWINKLE_GROUPS 2

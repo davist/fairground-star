@@ -16,7 +16,7 @@ Group fairgroundGroups[NUM_FAIRGROUND_GROUPS] = {
 
 Group twinkleGroups[NUM_TWINKLE_GROUPS] = {
   // individual
-  { 11, {{1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}} },
+  { 11, {{1}, {7}, {10}, {4}, {3}, {8}, {5}, {6}, {11}, {2}, {9}} },
   // arms with separate centre
   { 6, {{1}, {2, 3}, {4, 5}, {6, 7}, {8, 9}, {10, 11}} } 
 };
@@ -33,6 +33,4 @@ Group steadyGroups[NUM_STEADY_GROUPS] = {
   // wave from bottom-right
   { 6, {{7}, {6}, {4, 8}, {1, 5, 9}, {2, 10}, {3, 11}} },
 };
-
-
 
