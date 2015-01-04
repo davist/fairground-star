@@ -8,8 +8,13 @@
 #include "MoodSteady.h"
 
 
-// Define the array of leds
+// Define the array of leds that the moods write to
 CRGB leds[NUM_LEDS];
+
+// and the array of actual colours that FastLED uses.
+// leds is used to update realLeds every frame, fading from
+// the current colour (realLeds) to the required colour (leds).
+// This is to simulate the response time of incandesent bulbs.
 CRGB realLeds[NUM_LEDS];
 
 Mood* curMood;
@@ -21,10 +26,12 @@ volatile bool stillTouching = false;
 
 inline void changeMood(void) {
 
+  // clear down all leds
   fill_solid(leds, NUM_LEDS, CRGB::Black);
 
   if (curMood) delete curMood;
 
+  // cycle through moods
   curMoodNum = (curMoodNum + 1) % 3;
 
   switch (curMoodNum) {
@@ -43,78 +50,16 @@ inline void changeMood(void) {
 
 /////////////////////////////////////////
 
+// interrupt handler for touch sensor
 void touch(void) {
+  
+  // simply record that a touch event has started
   touchTime = millis();
   stillTouching = true;
 }
 
-/////////////////////////////////////////
-
-void setup(void) {
-
-  //Serial.begin(57600);
-  
-  // initialise FastLED
-  FastLED.addLeds<LED_TYPE, DATA_PIN, RGB_ORDER>(realLeds, NUM_LEDS);
-
-  // clear down any power-on led randomness asap
-  FastLED.setCorrection(TypicalLEDStrip);
-  FastLED.setDither(DISABLE_DITHER);
-  FastLED.setTemperature(Tungsten100W);
-  FastLED.clear();
-  FastLED.show();
-
-  curMood = new MoodFairground();
-
-  // set up handler for touch sensor
-  pinMode(TOUCH_PIN, INPUT);
-  attachInterrupt(TOUCH_INT, touch, RISING);
-}
-
 
 /////////////////////////////////////////
-
-void loop(void) {
-  
-  static uint32_t lastRenderTime = 0;
-
-  random16_add_entropy( random());
-  
-  // check if we're in the middle of a touch event
-  if (stillTouching) {
-    if (digitalRead(TOUCH_PIN) == LOW) {
-      // short press - change pattern
-      stillTouching = false;
-      changeMood();
-    }
-    else if (millis() - touchTime > LONG_TOUCH_TIME) {
-      // long press - turn off
-      stillTouching = false;
-      FastLED.clear();
-      FastLED.show();
-
-      // wait until touch input is off
-      while (digitalRead(TOUCH_PIN) == HIGH);
-      
-      set_sleep_mode(SLEEP_MODE_PWR_DOWN);    
-      sleep_enable();
-      sleep_mode();
-      
-      // The program will continue from here.
-      // First thing to do is disable sleep.
-      sleep_disable();
-    }
-  }
-  
-  // run rendering once per FRAME_TIME ms
-  if (millis() - lastRenderTime >= FRAME_TIME) {
-  
-    lastRenderTime = millis();
-    curMood->run();
-    copyLedsToRealLeds(curMood->fadeStep());    
-    FastLED.show();
-  }
-}
 
 inline void copyLedsToRealLeds(uint8_t step) {
   // copy leds to realLeds with hysteresis
@@ -159,3 +104,76 @@ inline void copyLedsToRealLeds(uint8_t step) {
     }
   }
 }
+
+
+/////////////////////////////////////////
+
+void setup(void) {
+
+  // initialise FastLED
+  FastLED.addLeds<LED_TYPE, DATA_PIN, RGB_ORDER>(realLeds, NUM_LEDS);
+
+  FastLED.setCorrection(TypicalLEDStrip);
+  FastLED.setDither(DISABLE_DITHER);
+  FastLED.setTemperature(Tungsten100W);
+
+  // clear down any power-on led randomness asap
+  FastLED.clear();
+  FastLED.show();
+
+  curMood = new MoodFairground();
+
+  // set up handler for touch sensor
+  pinMode(TOUCH_PIN, INPUT);
+  attachInterrupt(TOUCH_INT, touch, RISING);
+
+  // debugging
+  //Serial.begin(57600);  
+}
+
+
+/////////////////////////////////////////
+
+void loop(void) {
+  
+  static uint32_t lastRenderTime = 0;
+
+  random16_add_entropy( random());
+  
+  // check if we're in the middle of a touch event
+  if (stillTouching) {
+    // if touch ended before reaching LONG_TOUCH_TIME
+    if (digitalRead(TOUCH_PIN) == LOW) {
+      // short press - change pattern
+      stillTouching = false;
+      changeMood();
+    }
+    else if (millis() - touchTime > LONG_TOUCH_TIME) {
+      // long press - turn off
+      stillTouching = false;
+      FastLED.clear();
+      FastLED.show();
+
+      // wait until touch input is off
+      while (digitalRead(TOUCH_PIN) == HIGH);
+      
+      set_sleep_mode(SLEEP_MODE_PWR_DOWN);    
+      sleep_enable();
+      sleep_mode();
+      
+      // The program will continue from here.
+      // First thing to do is disable sleep.
+      sleep_disable();
+    }
+  }
+  
+  // run rendering once per FRAME_TIME ms
+  if (millis() - lastRenderTime >= FRAME_TIME) {
+  
+    lastRenderTime = millis();
+    curMood->run();
+    copyLedsToRealLeds(curMood->fadeStep());    
+    FastLED.show();
+  }
+}
+
