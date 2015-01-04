@@ -50,6 +50,52 @@ public:
     changeStep(true);
   }
   
+  bool run(void) {
+
+    // wait for frameDelay frames before executing next step
+    if (++frameDelayCount < frameDelay) return false;
+    
+    frameDelayCount = 0;
+    
+    // run anim step
+    bool finished = false;
+    switch (anim) {
+      case ANIM_PaintAndWipe:
+        finished = paintAndWipe();
+        break;
+
+      case ANIM_Fifo:
+        finished = fifo();
+        break;      
+
+      case ANIM_ContinuousPaint:
+        finished = continuousPaint();
+        break;
+      
+      case ANIM_ContinuousPaintMono:
+        finished = continuousPaintMono();
+        break;
+      
+      case ANIM_Marching:
+        finished = marching();
+        break;
+      
+      case ANIM_Flash:
+        finished = flash();
+        break;
+    }
+    
+    if (finished) {
+      animRepeats--;
+      if (animRepeats == 0) changeStep(false);    
+    }
+    
+    return true;
+  }
+
+
+private:
+
   void changePaletteAndGroup(void) {
     curGroup = random8(NUM_FAIRGROUND_GROUPS);
     curGroupSize = fairgroundGroups[curGroup].size;
@@ -209,49 +255,6 @@ public:
         animRepeats = random8(4,7);        
         break;
     }
-  }
-  
-  bool run(void) {
-
-    // wait for frameDelay frames before executing next step
-    if (++frameDelayCount < frameDelay) return false;
-    
-    frameDelayCount = 0;
-    
-    // run anim step
-    bool finished = false;
-    switch (anim) {
-      case ANIM_PaintAndWipe:
-        finished = paintAndWipe();
-        break;
-
-      case ANIM_Fifo:
-        finished = fifo();
-        break;      
-
-      case ANIM_ContinuousPaint:
-        finished = continuousPaint();
-        break;
-      
-      case ANIM_ContinuousPaintMono:
-        finished = continuousPaintMono();
-        break;
-      
-      case ANIM_Marching:
-        finished = marching();
-        break;
-      
-      case ANIM_Flash:
-        finished = flash();
-        break;
-    }
-    
-    if (finished) {
-      animRepeats--;
-      if (animRepeats == 0) changeStep(false);    
-    }
-    
-    return true;
   }
   
   bool paintAndWipe(void) {

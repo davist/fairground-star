@@ -23,8 +23,6 @@
 
 #define LONG_TOUCH_TIME 1000
 
-#define LED_CHANGE_STEP 60
-
 
 // Define the array of leds
 CRGB leds[NUM_LEDS];
@@ -37,7 +35,7 @@ volatile bool stillTouching = false;
 
 /////////////////////////////////////////
 
-void changeMood(void) {
+inline void changeMood(void) {
 
   fill_solid(leds, NUM_LEDS, CRGB::Black);
 
@@ -98,6 +96,7 @@ void loop(void) {
 
   random16_add_entropy( random());
   
+  // check if we're in the middle of a touch event
   if (stillTouching) {
     if (digitalRead(TOUCH_PIN) == LOW) {
       // short press - change pattern
@@ -120,7 +119,6 @@ void loop(void) {
       // The program will continue from here.
       // First thing to do is disable sleep.
       sleep_disable();
-      stillTouching = false;
     }
   }
   
@@ -129,47 +127,51 @@ void loop(void) {
   
     lastRenderTime = millis();
     curMood->run();
-    
-    // copy leds to realLeds with hysteresis
-    for (uint8_t i=0; i<NUM_LEDS; i++) {
-      CRGB *current = &realLeds[i];
-      CRGB *target = &leds[i];
-      
-      if (target->r != current->r) {
-        if (target->r > current->r) {
-          if (target->r - current->r > LED_CHANGE_STEP) current->r += LED_CHANGE_STEP;
-          else current->r = target->r;
-        }
-        else {
-          if (current->r - target->r > LED_CHANGE_STEP) current->r -= LED_CHANGE_STEP;
-          else current->r = target->r;
-        }
-      }
-
-      if (target->g != current->g) {
-        if (target->g > current->g) {
-          if (target->g - current->g > LED_CHANGE_STEP) current->g += LED_CHANGE_STEP;
-          else current->g = target->g;
-        }
-        else {
-          if (current->g - target->g > LED_CHANGE_STEP) current->g -= LED_CHANGE_STEP;
-          else current->g = target->g;
-        }
-      }
-
-      if (target->b != current->b) {
-        if (target->b > current->b) {
-          if (target->b - current->b > LED_CHANGE_STEP) current->b += LED_CHANGE_STEP;
-          else current->b = target->b;
-        }
-        else {
-          if (current->b - target->b > LED_CHANGE_STEP) current->b -= LED_CHANGE_STEP;
-          else current->b = target->b;
-        }
-      }
-    }
-    
+    copyLedsToRealLeds(curMood->fadeStep());    
     FastLED.show();
   }
 }
 
+inline void copyLedsToRealLeds(uint8_t step) {
+  // copy leds to realLeds with hysteresis
+  for (uint8_t i=0; i<NUM_LEDS; i++) {
+    CRGB *current = &realLeds[i];
+    CRGB *target = &leds[i];
+
+    // red    
+    if (target->r != current->r) {
+      if (target->r > current->r) {
+        if (target->r - current->r > step) current->r += step;
+        else current->r = target->r;
+      }
+      else {
+        if (current->r - target->r > step) current->r -= step;
+        else current->r = target->r;
+      }
+    }
+
+    // green
+    if (target->g != current->g) {
+      if (target->g > current->g) {
+        if (target->g - current->g > step) current->g += step;
+        else current->g = target->g;
+      }
+      else {
+        if (current->g - target->g > step) current->g -= step;
+        else current->g = target->g;
+      }
+    }
+
+    // blue
+    if (target->b != current->b) {
+      if (target->b > current->b) {
+        if (target->b - current->b > step) current->b += step;
+        else current->b = target->b;
+      }
+      else {
+        if (current->b - target->b > step) current->b -= step;
+        else current->b = target->b;
+      }
+    }
+  }
+}

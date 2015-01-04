@@ -123,7 +123,9 @@ public:
     
     return true;
   }
-  
+ 
+ private:
+ 
   void changePalette(void) {
     curPalette = random8(0, NUM_PALETTES - 1);
     curPaletteIndex = random8(0, palettes[curPalette].size - 1);
