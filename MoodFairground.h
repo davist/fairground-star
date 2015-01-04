@@ -41,7 +41,48 @@ class MoodFairground : public Mood {
   uint8_t anim;
   uint8_t animRepeats;
   
+  struct {
+    bool painting;
+    uint8_t curSetNum;
+    bool used;
+  } configPaintAndWipe;
+  
+  struct {
+    bool started;
+    bool filling;
+    uint8_t curSetNum;
+    int8_t endSetNum;
+    uint8_t initialPaletteIndex;
+    bool used;
+  } configFifo;
+  
+  struct {
+    uint8_t curSetNum;
+    bool used;
+  } configContinuousPaint;
+  
+  struct {
+    uint8_t curSetNum;
+    bool used;
+  } configContinuousPaintMono;
+  
+  struct {
+    uint8_t offset;
+    uint8_t iterations;
+    bool used;
+  } configMarching;
+  
+  struct {
+    bool flashOn;
+    bool used;
+  } configFlash;
+  
+  
+  
 public:
+
+  /////////////////////////////////////////
+
   MoodFairground() {
     frameDelay = SLOW;
     frameDelayCount = frameDelay;
@@ -49,6 +90,8 @@ public:
     changeStep(true);
   }
   
+  /////////////////////////////////////////
+
   bool run(void) {
 
     // wait for frameDelay frames before executing next step
@@ -95,6 +138,8 @@ public:
 
 private:
 
+  /////////////////////////////////////////
+
   void changePaletteAndGroup(void) {
     curGroup = random8(NUM_FAIRGROUND_GROUPS);
     curGroupSize = fairgroundGroups[curGroup].size;
@@ -106,6 +151,35 @@ private:
       palettes[curPalette].colours[ random8(palettes[curPalette].size) ]
     );
   }
+
+  /////////////////////////////////////////
+
+  void initAnimConfigs(void) {
+    configPaintAndWipe.painting = true;
+    configPaintAndWipe.curSetNum = 0;
+    configPaintAndWipe.used = false;
+
+    configFifo.filling = true;
+    configFifo.curSetNum = 0;
+    configFifo.endSetNum = curGroupSize;
+    configFifo.initialPaletteIndex;
+    configFifo.used = false;
+  
+    configContinuousPaint.curSetNum = 0;
+    configContinuousPaint.used = false;
+  
+    configContinuousPaintMono.curSetNum = 0;
+    configContinuousPaintMono.used = false;
+  
+    configMarching.offset = 0;
+    configMarching.iterations = 5;
+    configMarching.used = false;
+  
+    configFlash.flashOn = true;
+    configFlash.used = false;
+  };
+  
+  /////////////////////////////////////////
 
   void changeStep(bool reset) {
     
@@ -145,7 +219,7 @@ private:
         }
         break;
       case 5: // optional extra 2nd half anim
-        if (usedFlash) seqStep = 0;
+        if (configFlash.used) seqStep = 0;
         else {
           if (ran8 < 220) seqStep = 6;
           else seqStep = 0;
@@ -163,24 +237,19 @@ private:
         Serial.println("step 0");
         // reset everything
         frameDelay = SLOW;
-        usedPaintAndWipe = false;
-        usedFifo = false;
-        usedContinuousPaint = false;
-        usedContinuousPaintMono = false;
-        usedMarching = false;
-        usedFlash = false;  
         changePaletteAndGroup();
+        initAnimConfigs();
         
         switch (random8(0, 2)) {
           case 0:
             Serial.println("paint/wipe");
             anim = ANIM_PaintAndWipe;
-            usedPaintAndWipe = true;
+            configPaintAndWipe.used = true;
             break;
           case 1:
             Serial.println("fifo");
             anim = ANIM_Fifo;
-            usedFifo = true;
+            configFifo.used = true;
             break;
         }
         
@@ -194,12 +263,12 @@ private:
           case 0:
             Serial.println("paint/wipe");
             anim = ANIM_PaintAndWipe;
-            usedPaintAndWipe = true;
+            configPaintAndWipe.used = true;
             break;
           case 1:
             Serial.println("fifo");
             anim = ANIM_Fifo;
-            usedFifo = true;
+            configFifo.used = true;
             break;
         }
         animRepeats = random8(2,4);
@@ -208,10 +277,10 @@ private:
       case 2: // if one anim unused, use it
         Serial.println("step 2");
         
-        if (!usedPaintAndWipe)       anim = ANIM_PaintAndWipe;
-        else if (!usedFifo)          anim = ANIM_Fifo;
-        else if (random8(0, 2) == 0) anim = ANIM_PaintAndWipe;
-        else                         anim = ANIM_Fifo;
+        if (!configPaintAndWipe.used) anim = ANIM_PaintAndWipe;
+        else if (!configFifo.used)    anim = ANIM_Fifo;
+        else if (random8() < 128)     anim = ANIM_PaintAndWipe;
+        else                          anim = ANIM_Fifo;
         
         animRepeats = random8(2,4);
         break;
@@ -239,20 +308,19 @@ private:
         switch (random8(0, 3)) {
           case 0:
             anim = ANIM_ContinuousPaint;
-            if (usedContinuousPaint) frameDelay = FAST; // if used before, speed up
-            usedContinuousPaint = true;
+            if (configContinuousPaint.used) frameDelay = FAST; // if used before, speed up
+            configContinuousPaint.used = true;
             animRepeats = random8(3,5);
             break;
           case 1:
             anim = ANIM_ContinuousPaintMono;
-            if (usedContinuousPaintMono) frameDelay = FAST; // if used before, speed up
-            usedContinuousPaintMono = true;
+            if (configContinuousPaintMono.used) frameDelay = FAST; // if used before, speed up
+            configContinuousPaintMono.used = true;
             animRepeats = random8(6,8);
             break;
           case 2:
             anim = ANIM_Marching;
-            if (usedMarching) frameDelay = FAST;
-            usedMarching = true;
+            configMarching.used = true;
             animRepeats = random8(3,5);
             break;
         }
@@ -268,29 +336,49 @@ private:
     }
   }
   
-  bool paintAndWipe(void) {
-    static bool painting = true;
-    static uint8_t curSetNum = 0;
-    
-    if (painting) {
-      // paint
-      fairgroundGroups[curGroup].setColour(curSetNum, palettes[curPalette].colours[curPaletteIndex]);
+  /////////////////////////////////////////
+  // Animations
+  /////////////////////////////////////////
+
+  inline void setPaletteColour(uint8_t setNum) {
+    fairgroundGroups[curGroup].setColour(setNum, palettes[curPalette].colours[curPaletteIndex]);
+  }
   
-      curPaletteIndex = (curPaletteIndex + 1) % palettes[curPalette].size;
-      curSetNum++;
-      if (curSetNum == curGroupSize) {
-        painting = false;
-        curSetNum = 0;
+  /////////////////////////////////////////
+
+  inline void setBlack(uint8_t setNum) {
+    fairgroundGroups[curGroup].setColour(setNum, CRGB::Black);
+  }
+
+  /////////////////////////////////////////
+
+  inline void incPaletteIndex(void) {
+    curPaletteIndex = (curPaletteIndex + 1) % palettes[curPalette].size;
+  }
+  
+  /////////////////////////////////////////
+
+  bool paintAndWipe(void) {
+    
+    if (configPaintAndWipe.painting) {
+      // paint
+      setPaletteColour(configPaintAndWipe.curSetNum);
+  
+      incPaletteIndex();
+      configPaintAndWipe.curSetNum++;
+      if (configPaintAndWipe.curSetNum == curGroupSize) {
+        configPaintAndWipe.painting = false;
+        configPaintAndWipe.curSetNum = 0;
       }
     }
     else {
       // wipe
-      fairgroundGroups[curGroup].setColour(curSetNum, CRGB::Black);
+      setBlack(configPaintAndWipe.curSetNum);
   
-      curSetNum++;
-      if (curSetNum == curGroupSize) {
-        painting = true;
-        curSetNum = 0;
+      configPaintAndWipe.curSetNum++;
+      if (configPaintAndWipe.curSetNum == curGroupSize) {
+        configPaintAndWipe.painting = true;
+        configPaintAndWipe.curSetNum = 0;
         
         //finished
         return true;
@@ -300,65 +388,57 @@ private:
     return false;
   }
   
+  /////////////////////////////////////////
+
   bool fifo(void) {
-    static bool started = false;
-    static bool filling;
-    static uint8_t curSetNum;
-    static int8_t endSetNum;
-    static uint8_t initialPaletteIndex;
     
-    if (!started) {
-      started = true;
-      filling = true;
-      curSetNum = 0;
-      endSetNum = curGroupSize;
-    }
-    
-    if (filling) {
+    if (configFifo.filling) {
       // fill      
-      if (curSetNum == 0) initialPaletteIndex = curPaletteIndex;
+      if (configFifo.curSetNum == 0) configFifo.initialPaletteIndex = curPaletteIndex;
       
-      if (curSetNum > 0) {
-        fairgroundGroups[curGroup].setColour(curSetNum - 1, CRGB::Black);
+      if (configFifo.curSetNum > 0) {
+        setBlack(configFifo.curSetNum - 1);
       }
 
-      fairgroundGroups[curGroup].setColour(curSetNum, palettes[curPalette].colours[curPaletteIndex]);
+      setPaletteColour(configFifo.curSetNum);
   
-      curSetNum++;
+      configFifo.curSetNum++;
 
-      if (curSetNum == endSetNum) {
-        curSetNum = 0;
-        endSetNum--;
-        curPaletteIndex = (curPaletteIndex + 1) % palettes[curPalette].size;
+      if (configFifo.curSetNum == configFifo.endSetNum) {
+        configFifo.curSetNum = 0;
+        configFifo.endSetNum--;
+        incPaletteIndex();
         
-        if (endSetNum == 0) {
-          filling = false;
-          endSetNum = curGroupSize - 1;
-          curSetNum = endSetNum + 1;
-          curPaletteIndex = initialPaletteIndex;
+        if (configFifo.endSetNum == 0) {
+          configFifo.filling = false;
+          configFifo.endSetNum = curGroupSize - 1;
+          configFifo.curSetNum = configFifo.endSetNum + 1;
+          curPaletteIndex = configFifo.initialPaletteIndex;
         }
       }
     }
     else {
       // empty
-      if (curSetNum > 0) {
-        fairgroundGroups[curGroup].setColour(curSetNum - 1, CRGB::Black);
+      if (configFifo.curSetNum > 0) {
+        setBlack(configFifo.curSetNum - 1);
       }
 
-      if (curSetNum < curGroupSize) {
-        fairgroundGroups[curGroup].setColour(curSetNum, palettes[curPalette].colours[curPaletteIndex]);
+      if (configFifo.curSetNum < curGroupSize) {
+        setPaletteColour(configFifo.curSetNum);
       }
       
-      curSetNum++;
+      configFifo.curSetNum++;
 
-      if (curSetNum > curGroupSize) {
-        endSetNum--;
-        curSetNum = endSetNum + 1;
-        curPaletteIndex = (curPaletteIndex + 1) % palettes[curPalette].size;
+      if (configFifo.curSetNum > curGroupSize) {
+        configFifo.endSetNum--;
+        configFifo.curSetNum = configFifo.endSetNum + 1;
+        incPaletteIndex();
         
-        if (endSetNum < 0) {
+        if (configFifo.endSetNum < 0) {
           // finished
-          started = false;
+          configFifo.filling = true;
+          configFifo.curSetNum == 0;
+          configFifo.endSetNum = curGroupSize;
           return true;
         }
       }
@@ -367,16 +447,17 @@ private:
     return false;
   }
 
+  /////////////////////////////////////////
+
   bool continuousPaint(void) {
-    static uint8_t curSetNum = 0;
 
-    fairgroundGroups[curGroup].setColour(curSetNum, palettes[curPalette].colours[curPaletteIndex]);
+    setPaletteColour(configContinuousPaint.curSetNum);
 
-    curSetNum++;
-    curPaletteIndex = (curPaletteIndex + 1) % palettes[curPalette].size;
+    configContinuousPaint.curSetNum++;
+    incPaletteIndex();
     
-    if (curSetNum == curGroupSize) {
-      curSetNum = 0;
+    if (configContinuousPaint.curSetNum == curGroupSize) {
+      configContinuousPaint.curSetNum = 0;
       // finished
       return true;
     }
@@ -384,16 +465,17 @@ private:
     return false;
   }
   
+  /////////////////////////////////////////
+
   bool continuousPaintMono(void) {
-    static uint8_t curSetNum = 0;
 
-    fairgroundGroups[curGroup].setColour(curSetNum, palettes[curPalette].colours[curPaletteIndex]);
+    setPaletteColour(configContinuousPaintMono.curSetNum);
 
-    curSetNum++;
+    configContinuousPaintMono.curSetNum++;
     
-    if (curSetNum == curGroupSize) {
-      curSetNum = 0;
-      curPaletteIndex = (curPaletteIndex + 1) % palettes[curPalette].size;
+    if (configContinuousPaintMono.curSetNum == curGroupSize) {
+      configContinuousPaintMono.curSetNum = 0;
+      incPaletteIndex();
       // finished
       return true;
     }
@@ -401,29 +483,29 @@ private:
     return false;
   }
   
+  /////////////////////////////////////////
+
   bool marching(void) {
-    static uint8_t offset = 0;
-    static uint8_t iterations = 5;
 
     // check offset isn't out of range due to palette changing since last execution
-    if (offset >= palettes[curPalette].size) {
-      offset = 0;
+    if (configMarching.offset >= palettes[curPalette].size) {
+      configMarching.offset = 0;
     }
 
-    curPaletteIndex = offset;
+    curPaletteIndex = configMarching.offset;
 
     for (uint8_t curSetNum=0; curSetNum < curGroupSize; curSetNum++) {
-      fairgroundGroups[curGroup].setColour(curSetNum, palettes[curPalette].colours[curPaletteIndex]);
-      curPaletteIndex = (curPaletteIndex + 1) % palettes[curPalette].size;
+      setPaletteColour(curSetNum);
+      incPaletteIndex();
     }
     
-    if (offset == 0) offset = palettes[curPalette].size - 1;
-    else offset --;
+    if (configMarching.offset == 0) configMarching.offset = palettes[curPalette].size - 1;
+    else configMarching.offset --;
     
-    iterations --;
+    configMarching.iterations --;
     
-    if (iterations == 0) {
-      iterations = 5;
+    if (configMarching.iterations == 0) {
+      configMarching.iterations = 5;
       // finished
       return true;
     }
@@ -431,26 +513,26 @@ private:
     return false;
   }
   
+  /////////////////////////////////////////
+
   bool flash(void) {
-    static bool flashOn = true;
     
-    if (flashOn) {
+    if (configFlash.flashOn) {
       for (uint8_t curSetNum=0; curSetNum < curGroupSize; curSetNum++) {
-        CRGB col = palettes[curPalette].colours[curPaletteIndex];
-        fairgroundGroups[curGroup].setColour(curSetNum, col);
-        fairgroundGroups[curGroup].setCommon(col);
-        curPaletteIndex = (curPaletteIndex + 1) % palettes[curPalette].size;
+        setPaletteColour(curSetNum);
+        fairgroundGroups[curGroup].setCommon(palettes[curPalette].colours[curPaletteIndex]);
+        incPaletteIndex();
       }
       
-      flashOn = false;
+      configFlash.flashOn = false;
     }
     else {
       for (uint8_t curSetNum=0; curSetNum < curGroupSize; curSetNum++) {
-        fairgroundGroups[curGroup].setColour(curSetNum, CRGB::Black);
+        setBlack(curSetNum);
         fairgroundGroups[curGroup].setCommon(CRGB::Black);
       }
 
-      flashOn = true;
+      configFlash.flashOn = true;
       
       // finished
       return true;
