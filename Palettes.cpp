@@ -27,3 +27,11 @@ const Palette palettes[NUM_PALETTES] = {
   { 3, 0xff7f00, 0xaa00aa, 0x20e000  }
 };
 
+const uint8_t fairgroundPalettes[NUM_FAIRGROUND_PALETTES] = {
+  0, 2, 3, 4, 5, 7
+};
+
+const uint8_t twinklePalettes[NUM_TWINKLE_PALETTES] = {
+  1, 2, 3, 5, 6, 7
+};
+

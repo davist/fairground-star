@@ -143,7 +143,7 @@ private:
   void changePaletteAndGroup(void) {
     curGroup = random8(NUM_FAIRGROUND_GROUPS);
     curGroupSize = fairgroundGroups[curGroup].size;
-    curPalette = random8(NUM_PALETTES);
+    curPalette = fairgroundPalettes[random8(NUM_FAIRGROUND_PALETTES)];
     curPaletteIndex = 0;
     
     // common bulbs have constant colour

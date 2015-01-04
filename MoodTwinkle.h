@@ -142,7 +142,7 @@ public:
  private:
  
   void changePalette(void) {
-    curPalette = random8(0, NUM_PALETTES);
+    curPalette = twinklePalettes[random8(NUM_TWINKLE_PALETTES)];
     curPaletteIndex = random8(0, palettes[curPalette].size);
     cycleIndex = (random8() < 180);
   }

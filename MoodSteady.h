@@ -40,7 +40,7 @@ public:
     // time to change palette?
     if (millis() - lastPaletteChangeTime > PALETTE_DURATION) {
       lastPaletteChangeTime = lastIndexChangeTime = millis();
-      curPalette = (curPalette + 1) % NUM_PALETTES;
+      curPalette = twinklePalettes[(curPalette + 1) % NUM_TWINKLE_PALETTES];
       // start on random index within palette
       curPaletteIndex = random8(0, palettes[curPalette].size - 1);
 
