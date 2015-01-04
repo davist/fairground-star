@@ -15,7 +15,7 @@ const Palette palettes[NUM_PALETTES] = {
   { 6, CRGB::Red, CRGB::Yellow, CRGB::Green, CRGB::Cyan, CRGB::Blue, CRGB::Magenta },
   
   // blue, gold
-  { 2, 0x1800df, 0xffe425 },
+  { 2, 0x1800df, 0xffd815 },
   
   // red, white, blue
   { 3, 0xff3f28, 0xe8e8f8, 0x213bff },

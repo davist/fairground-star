@@ -19,13 +19,15 @@ struct Bulb {
   uint8_t value;
   uint8_t step;
   uint8_t paletteIndex;
+  CRGB colour;
   uint8_t setNum;
   
-  void init(uint8_t step, uint8_t paletteIndex, uint8_t setNum) {
+  void init(uint8_t step, uint8_t curPalette, uint8_t paletteIndex, uint8_t setNum) {
     this->fadingUp = true;
     this->value = random8();
     this->step = step;
     this->paletteIndex = paletteIndex;
+    this->colour = palettes[curPalette].colours[paletteIndex];
     this->setNum = setNum;
   }
   
@@ -45,20 +47,33 @@ struct Bulb {
         if (cycleIndex) {
           paletteIndex = (paletteIndex + 1) % palettes[curPalette].size;
         }
+        // re-get colour from palette even if not cycling in case palette has changed
+        colour = palettes[curPalette].colours[paletteIndex];        
       }
     }
     
     // render
     
-    // get colour from palette
-    CRGB col = palettes[curPalette].colours[paletteIndex];
+    // get current colour
+    CRGB col = colour;
     
     // scale by value
-    col %= ease8InOutCubic(value);
+    col %= pow8(value, 2);
     
     // set relevant leds
     twinkleGroups[curGroup].setColour(setNum, col);
   }
+  
+  // raise n to the power e, treating n as a fraction from 0/256 to 255/256
+  inline uint8_t pow8(uint8_t n, uint8_t e) {
+    uint8_t result = n;
+    while (e > 1) {
+      result = scale8(result, n);
+      e--;
+    }
+    return result;
+  }
+
 };
 
 
@@ -90,7 +105,7 @@ public:
       changePalette();
       
       if (!cycleIndex) {
-        init();
+        setBulbPaletteIndexToCurrent();
       }
     }
     
@@ -138,16 +153,22 @@ public:
       case 0: // twinkle
       case 1: // slow twinkle
         for (int8_t i=0; i<NUM_LEDS; i++) {
-          bulbs[i].init( (curSeq == 0 ? 15 : 6) + i, curPaletteIndex, i);
+          bulbs[i].init( (curSeq == 0 ? 15 : 6) + i, curPalette, curPaletteIndex, i);
         }
         break;
   
       case 2: // fade
         for (int8_t i=0; i<NUM_LEDS; i++) {
-          bulbs[i].init(2, curPaletteIndex, i);
+          bulbs[i].init(2, curPalette, curPaletteIndex, i);
         }
         break;      
     }    
+  }
+  
+  void setBulbPaletteIndexToCurrent(void) {
+    for (int8_t i=0; i<NUM_LEDS; i++) {
+      bulbs[i].paletteIndex = curPaletteIndex;
+    }
   }
 };
 
