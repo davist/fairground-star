@@ -1,7 +1,7 @@
 #include "Groups.h"
 
-Group fairgroundGroups[NUM_FAIRGROUND_GROUPS] = {
-  // arms with overlapping centre
+Group fairgroundGroups[NUM_FAIRGROUND_GROUPS + 2] = {
+  // arms with common centre
   { 5, {{4, 5}, {6, 7}, {8, 9}, {10, 11}, {2, 3}}, {1} },
 
   // rings
@@ -11,7 +11,13 @@ Group fairgroundGroups[NUM_FAIRGROUND_GROUPS] = {
   { 7, {{7, 9}, {6, 8}, {1}, {4, 10}, {5, 11}, {2}, {3}} },
   
   // spiral
-  { 11, {{1}, {4}, {6}, {8}, {10}, {2}, {5}, {7}, {9}, {11}, {3}} }
+  { 11, {{1}, {4}, {6}, {8}, {10}, {2}, {5}, {7}, {9}, {11}, {3}} },
+
+  // arms with common centre - mid set at top
+  { 5, {{8, 9}, {10, 11}, {2, 3}, {4, 5}, {6, 7}}, {1} },
+
+  // rows reversed
+  { 7, {{3}, {2}, {5, 11}, {4, 10}, {1}, {6, 8}, {7, 9}} }
 };
 
 Group twinkleGroups[NUM_TWINKLE_GROUPS] = {

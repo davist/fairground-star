@@ -8,7 +8,7 @@
 
 
 #define PALETTE_DURATION 30000
-#define SEQ_DURATION 120000
+#define SEQ_DURATION 300000
 
 #define NUM_TWINKLE 11
 #define NUM_FADE 6
@@ -159,7 +159,7 @@ public:
   
       case 2: // fade
         for (int8_t i=0; i<NUM_LEDS; i++) {
-          bulbs[i].init(2, curPalette, curPaletteIndex, i);
+          bulbs[i].init(2 + i%2, curPalette, curPaletteIndex, i);
         }
         break;      
     }    

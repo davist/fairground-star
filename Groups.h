@@ -11,6 +11,8 @@
 #define GROUP_FAIRGROUND_RINGS 1
 #define GROUP_FAIRGROUND_ROWS 2
 #define GROUP_FAIRGROUND_SPIRAL 3
+#define GROUP_FAIRGROUND_ARMS2 4
+#define GROUP_FAIRGROUND_ROWS_REV 5
 
 #define GROUP_TWINKLE_INDIVIDUAL 0
 #define GROUP_TWINKLE_ARMS 1
@@ -55,7 +57,7 @@ struct Group {
   }
 };
 
-extern Group fairgroundGroups[NUM_FAIRGROUND_GROUPS];
+extern Group fairgroundGroups[NUM_FAIRGROUND_GROUPS + 2];
 extern Group twinkleGroups[NUM_TWINKLE_GROUPS];
 extern Group steadyGroups[NUM_STEADY_GROUPS];
 

@@ -128,7 +128,13 @@ void setup(void) {
   attachInterrupt(TOUCH_INT, touch, RISING);
 
   // debugging
-  //Serial.begin(57600);  
+  /*
+  Serial.begin(57600);
+
+  Serial.print("free ram ");
+  Serial.println(freeRam());
+  Serial.flush();
+  */
 }
 
 
@@ -176,4 +182,12 @@ void loop(void) {
     FastLED.show();
   }
 }
+
+/////////////////////////////////////////
+int freeRam () {
+  extern int __heap_start, *__brkval; 
+  int v; 
+  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
+}
+
 
